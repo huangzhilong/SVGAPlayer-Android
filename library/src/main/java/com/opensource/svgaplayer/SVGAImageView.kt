@@ -86,6 +86,9 @@ open class SVGAImageView : ImageView {
 
     private var animator: ValueAnimator? = null
 
+    //fix 网络请求回来此时已经DetachedFromWindow还进行播放
+    private var isDetachedFromWindow = false
+
     constructor(context: Context?) : super(context) {
         setSoftwareLayerType()
     }
@@ -111,8 +114,14 @@ open class SVGAImageView : ImageView {
         }
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        isDetachedFromWindow = false
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        isDetachedFromWindow = true
         animator?.cancel()
         animator?.removeAllListeners()
         animator?.removeAllUpdateListeners()
@@ -159,11 +168,17 @@ open class SVGAImageView : ImageView {
     }
 
     fun startAnimation() {
+        if (isDetachedFromWindow) {
+            return
+        }
         startAnimation(null, false)
     }
 
     fun startAnimation(range: SVGARange?, reverse: Boolean = false) {
         stopAnimation(false)
+        if (isDetachedFromWindow) {
+            return
+        }
         val drawable = drawable as? SVGADrawable ?: return
         drawable.cleared = false
         drawable.scaleType = scaleType
