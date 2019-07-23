@@ -42,7 +42,23 @@ class SVGADynamicEntity {
 
     fun setDynamicImage(url: String, forKey: String) {
         val handler = android.os.Handler()
-        Thread({
+//        Thread({
+//            try {
+//                (URL(url).openConnection() as? HttpURLConnection)?.let {
+//                    it.connectTimeout = 20 * 1000
+//                    it.requestMethod = "GET"
+//                    it.connect()
+//                    BitmapFactory.decodeStream(it.inputStream)?.let {
+//                        handler.post { setDynamicImage(it, forKey) }
+//                    }
+//                    it.inputStream.close()
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }).start()
+
+        SVGAExecutorService.executorTask(Runnable {
             try {
                 (URL(url).openConnection() as? HttpURLConnection)?.let {
                     it.connectTimeout = 20 * 1000
@@ -56,7 +72,7 @@ class SVGADynamicEntity {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }).start()
+        })
     }
 
     fun setDynamicText(text: String, textPaint: TextPaint, forKey: String) {

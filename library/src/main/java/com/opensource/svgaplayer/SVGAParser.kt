@@ -36,7 +36,40 @@ class SVGAParser(private val context: Context) {
         var noCache = false
 
         open fun resume(url: URL, complete: (inputStream: InputStream) -> Unit, failure: (e: Exception) -> Unit) {
-            Thread({
+//            Thread {
+//                try {
+//                    if (HttpResponseCache.getInstalled() == null && !noCache) {
+//                        Log.e("SVGAParser", "SVGAParser can not handle cache before install HttpResponseCache. see https://github.com/yyued/SVGAPlayer-Android#cache")
+//                        Log.e("SVGAParser", "在配置 HttpResponseCache 前 SVGAParser 无法缓存. 查看 https://github.com/yyued/SVGAPlayer-Android#cache ")
+//                    }
+//                    (url.openConnection() as? HttpURLConnection)?.let {
+//                        it.connectTimeout = 20 * 1000
+//                        it.requestMethod = "GET"
+//                        it.connect()
+//                        it.inputStream.use { inputStream ->
+//                            ByteArrayOutputStream().use { outputStream ->
+//                                val buffer = ByteArray(4096)
+//                                var count: Int
+//                                while (true) {
+//                                    count = inputStream.read(buffer, 0, 4096)
+//                                    if (count == -1) {
+//                                        break
+//                                    }
+//                                    outputStream.write(buffer, 0, count)
+//                                }
+//                                ByteArrayInputStream(outputStream.toByteArray()).use {
+//                                    complete(it)
+//                                }
+//                            }
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                    failure(e)
+//                }
+//            }.start()
+
+            SVGAExecutorService.executorTask(Runnable {
                 try {
                     if (HttpResponseCache.getInstalled() == null && !noCache) {
                         Log.e("SVGAParser", "SVGAParser can not handle cache before install HttpResponseCache. see https://github.com/yyued/SVGAPlayer-Android#cache")
@@ -67,7 +100,7 @@ class SVGAParser(private val context: Context) {
                     e.printStackTrace()
                     failure(e)
                 }
-            }).start()
+            })
         }
 
     }
@@ -103,23 +136,38 @@ class SVGAParser(private val context: Context) {
         })
     }
 
-    fun parse(inputStream: InputStream, cacheKey: String, callback: ParseCompletion, closeInputStream: Boolean = false) {
-        Thread({
+    fun parse(inputStream: InputStream, cacheKey: String, callback: ParseCompletion, closeInputStream: Boolean = false) { //       Thread({
+//            val videoItem = parse(inputStream, cacheKey)
+//            if (closeInputStream) {
+//                inputStream.close()
+//            }
+//            if (videoItem != null) {
+//                    Handler(context.mainLooper).post {
+//                        callback.onComplete(videoItem)
+//                    }
+//                }
+//                else {
+//                    Handler(context.mainLooper).post {
+//                        callback.onError()
+//                    }
+//                }
+//        }).start()
+
+        SVGAExecutorService.executorTask(Runnable {
             val videoItem = parse(inputStream, cacheKey)
             if (closeInputStream) {
                 inputStream.close()
             }
             if (videoItem != null) {
-                    Handler(context.mainLooper).post {
-                        callback.onComplete(videoItem)
-                    }
+                Handler(context.mainLooper).post {
+                    callback.onComplete(videoItem)
                 }
-                else {
-                    Handler(context.mainLooper).post {
-                        callback.onError()
-                    }
+            } else {
+                Handler(context.mainLooper).post {
+                    callback.onError()
                 }
-        }).start()
+            }
+        })
     }
 
     private fun parse(inputStream: InputStream, cacheKey: String): SVGAVideoEntity? {

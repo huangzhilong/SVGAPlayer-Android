@@ -143,7 +143,28 @@ open class SVGAImageView : ImageView {
         }
         typedArray.getString(R.styleable.SVGAImageView_source)?.let {
             val parser = SVGAParser(context)
-            Thread({
+//            Thread({
+//                val callback: SVGAParser.ParseCompletion = object : SVGAParser.ParseCompletion {
+//                    override fun onComplete(videoItem: SVGAVideoEntity) {
+//                        handler?.post {
+//                            videoItem.antiAlias = antiAlias
+//                            setVideoItem(videoItem)
+//                            if (autoPlay) {
+//                                startAnimation()
+//                            }
+//                        }
+//                    }
+//
+//                    override fun onError() {}
+//                }
+//                if(it.startsWith("http://") || it.startsWith("https://")) {
+//                    parser.parse(URL(it), callback)
+//                } else {
+//                    parser.parse(it, callback)
+//                }
+//            }).start()
+
+            SVGAExecutorService.executorTask(Runnable {
                 val callback: SVGAParser.ParseCompletion = object : SVGAParser.ParseCompletion {
                     override fun onComplete(videoItem: SVGAVideoEntity) {
                         handler?.post {
@@ -162,7 +183,7 @@ open class SVGAImageView : ImageView {
                 } else {
                     parser.parse(it, callback)
                 }
-            }).start()
+            })
         }
         typedArray.recycle()
     }
