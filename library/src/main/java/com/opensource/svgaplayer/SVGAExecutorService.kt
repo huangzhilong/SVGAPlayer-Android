@@ -18,7 +18,12 @@ class SVGAExecutorService {
         }
 
         fun executorTask(runnable: Runnable) {
-            mExecutorService?.execute(runnable) ?: (Thread { runnable }.start())
+            if (mExecutorService != null) {
+                mExecutorService?.execute(runnable)
+            } else {
+                var thread = Thread(runnable)
+                thread.start()
+            }
         }
     }
 }
