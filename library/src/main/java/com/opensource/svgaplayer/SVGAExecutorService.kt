@@ -1,6 +1,6 @@
 package com.opensource.svgaplayer
 
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 
 /**
  * Created by huangzhilong on 2019-07-23.
@@ -11,14 +11,14 @@ class SVGAExecutorService {
 
     companion object {
 
-        private var mExecutorService: ExecutorService? = null
+        private var mExecutorService: Executor? = null
 
-        fun setExecutorService(executorService: ExecutorService) {
+        fun setExecutorService(executorService: Executor?) {
             mExecutorService = executorService
         }
 
         fun executorTask(runnable: Runnable) {
-            mExecutorService?.execute(runnable) ?: Thread { runnable }.start()
+            mExecutorService?.execute(runnable) ?: (Thread { runnable }.start())
         }
     }
 }
